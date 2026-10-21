@@ -1,0 +1,24 @@
+{
+  "name": "turnosmart",
+  "private": true,
+  "version": "0.1.0",
+  "description": "TurnoSmart - gestión de turnos SaaS multi-tenant con scoring de riesgo e IA",
+  "workspaces": [
+    "packages/shared",
+    "apps/backend",
+    "apps/frontend"
+  ],
+  "engines": {
+    "node": ">=22 <25"
+  },
+  "scripts": {
+    "build:shared": "npm run build -w @turnosmart/shared",
+    "build": "npm run build:shared && npm run build -w @turnosmart/backend && npm run build -w @turnosmart/frontend",
+    "dev:backend": "npm run build:shared && npm run dev -w @turnosmart/backend",
+    "dev:frontend": "npm run build:shared && npm run dev -w @turnosmart/frontend",
+    "typecheck": "npm run build:shared && npm run typecheck -w @turnosmart/backend && npm run typecheck -w @turnosmart/frontend",
+    "test": "npm run build:shared && npm run test -w @turnosmart/backend",
+    "test:integration": "npm run build:shared && npm run test:integration -w @turnosmart/backend",
+    "test:e2e": "npm run test:e2e -w @turnosmart/frontend"
+  }
+}

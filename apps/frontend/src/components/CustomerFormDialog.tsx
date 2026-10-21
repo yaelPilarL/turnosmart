@@ -1,0 +1,90 @@
+'use client';
+
+import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField } from '@mui/material';
+import type { CreateCustomerRequest, CustomerDto } from '@turnosmart/shared';
+import { useEffect, useState, type FormEvent } from 'react';
+import { api, errorMessage, fieldErrors } from '@/lib/api';
+
+interface Props {
+  open: boolean;
+  /** Cliente a editar; null para alta. */
+  customer: CustomerDto | null;
+  onClose(): void;
+  onSaved(customer: CustomerDto): void;
+}
+
+const empty = { fullName: '', email: '', phone: '', notes: '' };
+
+/** Formulario reutilizable para alta y edición de clientes. */
+export function CustomerFormDialog({ open, customer, onClose, onSaved }: Props) {
+  const [form, setForm] = useState(empty);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    setErrors({});
+    setError(null);
+    setForm(
+      customer
+        ? {
+            fullName: customer.fullName,
+            email: customer.email ?? '',
+            phone: customer.phone ?? '',
+            notes: customer.notes ?? '',
+          }
+        : empty,
+    );
+  }, [open, customer]);
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    setErrors({});
+    setError(null);
+    try {
+      const body: CreateCustomerRequest = form;
+      const saved = customer
+        ? await api<CustomerDto>(`/api/customers/${customer.id}`, { method: 'PATCH', body })
+        : await api<CustomerDto>('/api/customers', { method: 'POST', body });
+      onSaved(saved);
+    } catch (err) {
+      setErrors(fieldErrors(err));
+      setError(errorMessage(err));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const field = (name: keyof typeof empty) => ({
+    name,
+    value: form[name],
+    error: !!errors[name],
+    helperText: errors[name],
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => setForm({ ...form, [name]: e.target.value }),
+  });
+
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <form onSubmit={onSubmit}>
+        <DialogTitle>{customer ? 'Editar cliente' : 'Nuevo cliente'}</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ pt: 1 }}>
+            {error && <Alert severity="error">{error}</Alert>}
+            <TextField label="Nombre y apellido" required autoFocus {...field('fullName')} />
+            <TextField label="Email" type="email" {...field('email')} />
+            <TextField label="Teléfono" {...field('phone')} />
+            <TextField label="Notas" multiline minRows={2} {...field('notes')} />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose}>Cancelar</Button>
+          <Button type="submit" variant="contained" disabled={saving}>
+            {saving ? 'Guardando…' : 'Guardar'}
+          </Button>
+        </DialogActions>
+      </form>
+    </Dialog>
+  );
+}
