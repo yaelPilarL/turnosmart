@@ -1,6 +1,18 @@
 'use client';
 
-import { Alert, Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField } from '@mui/material';
+import {
+  Alert,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+  TextField,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 import type { CreateCustomerRequest, CustomerDto } from '@turnosmart/shared';
 import { useEffect, useState, type FormEvent } from 'react';
 import { api, errorMessage, fieldErrors } from '@/lib/api';
@@ -21,6 +33,7 @@ export function CustomerFormDialog({ open, customer, onClose, onSaved }: Props) 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const fullScreen = useMediaQuery(useTheme().breakpoints.down('sm'));
 
   useEffect(() => {
     if (!open) return;
@@ -66,9 +79,15 @@ export function CustomerFormDialog({ open, customer, onClose, onSaved }: Props) 
   });
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <form onSubmit={onSubmit}>
-        <DialogTitle>{customer ? 'Editar cliente' : 'Nuevo cliente'}</DialogTitle>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" fullScreen={fullScreen}>
+      {/* noValidate: los errores los muestra el servidor junto a cada campo, en español. */}
+      <form onSubmit={onSubmit} noValidate>
+        <DialogTitle>
+          {customer ? 'Editar cliente' : 'Nuevo cliente'}
+          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 400 }}>
+            Sólo el nombre es obligatorio.
+          </Typography>
+        </DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ pt: 1 }}>
             {error && <Alert severity="error">{error}</Alert>}
@@ -78,7 +97,7 @@ export function CustomerFormDialog({ open, customer, onClose, onSaved }: Props) 
             <TextField label="Notas" multiline minRows={2} {...field('notes')} />
           </Stack>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ px: 3, pb: 2.5 }}>
           <Button onClick={onClose}>Cancelar</Button>
           <Button type="submit" variant="contained" disabled={saving}>
             {saving ? 'Guardando…' : 'Guardar'}

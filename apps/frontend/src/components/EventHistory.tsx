@@ -1,16 +1,18 @@
 'use client';
 
-import { Alert, Box, Button, Card, CardContent, Chip, List, ListItem, ListItemText, Typography } from '@mui/material';
+import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
+import { Alert, Box, Button, Card, CardContent, Chip, Skeleton, Stack, Typography } from '@mui/material';
 import type { AppointmentEventDto, AppointmentStatus } from '@turnosmart/shared';
 import { useCallback, useEffect, useState } from 'react';
 import { api, errorMessage } from '@/lib/api';
+import { EmptyState } from './ui';
 
-const STATUS_LABEL: Record<AppointmentStatus, string> = {
-  SCHEDULED: 'Agendado',
-  CONFIRMED: 'Confirmado',
-  CANCELLED: 'Cancelado',
-  COMPLETED: 'Completado',
-  NO_SHOW: 'Ausente',
+const STATUS: Record<AppointmentStatus, { label: string; color: 'default' | 'info' | 'success' | 'error' | 'warning' }> = {
+  SCHEDULED: { label: 'Agendado', color: 'info' },
+  CONFIRMED: { label: 'Confirmado', color: 'success' },
+  CANCELLED: { label: 'Cancelado', color: 'error' },
+  COMPLETED: { label: 'Completado', color: 'success' },
+  NO_SHOW: { label: 'Ausente', color: 'warning' },
 };
 
 const TYPE_LABEL: Record<string, string> = {
@@ -18,6 +20,16 @@ const TYPE_LABEL: Record<string, string> = {
   RESCHEDULED: 'Turno reprogramado',
   STATUS_CHANGED: 'Cambio de estado',
 };
+
+const StatusChip = ({ status, outlined }: { status: AppointmentStatus; outlined?: boolean }) => (
+  <Chip
+    size="small"
+    color={STATUS[status].color}
+    variant={outlined ? 'outlined' : 'filled'}
+    label={STATUS[status].label}
+    sx={{ height: 22, fontSize: 12 }}
+  />
+);
 
 /** Historial del turno en orden cronológico (C07). Sólo lectura. */
 export function EventHistory({ appointmentId, timezone }: { appointmentId: string; timezone: string }) {
@@ -37,12 +49,12 @@ export function EventHistory({ appointmentId, timezone }: { appointmentId: strin
     load();
   }, [load]);
 
-  const fmt = new Intl.DateTimeFormat('es-AR', { dateStyle: 'short', timeStyle: 'short', timeZone: timezone });
+  const fmt = new Intl.DateTimeFormat('es-AR', { dateStyle: 'medium', timeStyle: 'short', timeZone: timezone });
 
   return (
-    <Card variant="outlined">
+    <Card>
       <CardContent>
-        <Typography variant="h6" component="h2" gutterBottom>
+        <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
           Historial
         </Typography>
         {error && (
@@ -50,25 +62,58 @@ export function EventHistory({ appointmentId, timezone }: { appointmentId: strin
             {error}
           </Alert>
         )}
-        {events?.length === 0 && <Typography color="text.secondary">Sin eventos registrados.</Typography>}
+        {!events && !error && (
+          <Stack spacing={2}>
+            <Skeleton width="80%" />
+            <Skeleton width="60%" />
+          </Stack>
+        )}
+        {events?.length === 0 && (
+          <EmptyState icon={<HistoryRoundedIcon />} title="Sin movimientos" description="Los cambios del turno van a aparecer acá." />
+        )}
         {events && events.length > 0 && (
-          <List dense aria-label="Historial del turno">
-            {events.map((e) => (
-              <ListItem key={e.id} divider>
-                <ListItemText
-                  primary={
-                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-                      <span>{TYPE_LABEL[e.type] ?? e.type}</span>
-                      {e.fromStatus && <Chip size="small" variant="outlined" label={STATUS_LABEL[e.fromStatus]} />}
-                      {e.fromStatus && e.toStatus && <span aria-hidden>→</span>}
-                      {e.toStatus && <Chip size="small" label={STATUS_LABEL[e.toStatus]} />}
-                    </Box>
-                  }
-                  secondary={fmt.format(new Date(e.createdAt))}
-                />
-              </ListItem>
-            ))}
-          </List>
+          <Box component="ol" aria-label="Historial del turno" sx={{ m: 0, p: 0, listStyle: 'none' }}>
+            {events.map((e, i) => {
+              const last = i === events.length - 1;
+              return (
+                <Box component="li" key={e.id} sx={{ display: 'flex', gap: 1.75 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', pt: 0.75 }}>
+                    <Box
+                      sx={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: '50%',
+                        bgcolor: last ? 'primary.main' : 'background.paper',
+                        border: 2,
+                        borderColor: 'primary.main',
+                        flexShrink: 0,
+                      }}
+                    />
+                    {!last && <Box sx={{ width: 2, flexGrow: 1, bgcolor: 'divider', my: 0.5 }} />}
+                  </Box>
+                  <Box sx={{ pb: last ? 0 : 2.5, minWidth: 0 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {TYPE_LABEL[e.type] ?? e.type}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {fmt.format(new Date(e.createdAt))}
+                    </Typography>
+                    {(e.fromStatus || e.toStatus) && (
+                      <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', mt: 0.75, flexWrap: 'wrap' }}>
+                        {e.fromStatus && <StatusChip status={e.fromStatus} outlined />}
+                        {e.fromStatus && e.toStatus && (
+                          <Typography variant="caption" color="text.secondary" aria-hidden>
+                            →
+                          </Typography>
+                        )}
+                        {e.toStatus && <StatusChip status={e.toStatus} />}
+                      </Stack>
+                    )}
+                  </Box>
+                </Box>
+              );
+            })}
+          </Box>
         )}
       </CardContent>
     </Card>

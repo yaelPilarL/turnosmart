@@ -1,25 +1,28 @@
 'use client';
 
-import { Alert, Box, Button, Card, CardContent, Stack, TextField, Typography } from '@mui/material';
+import PublicRoundedIcon from '@mui/icons-material/PublicRounded';
+import { Alert, Box, Button, Stack, TextField, Typography } from '@mui/material';
 import type { MeResponse, OnboardingRequest } from '@turnosmart/shared';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, type FormEvent } from 'react';
+import { AuthLayout } from '@/components/AuthLayout';
 import { useAuth } from '@/components/AuthProvider';
 import { api, errorMessage, fieldErrors } from '@/lib/api';
-
-const DEFAULT_TZ = 'America/Argentina/Buenos_Aires';
+import { DEFAULT_TIMEZONE, detectTimezone, timezoneLabel } from '@/lib/timezones';
 
 export default function OnboardingPage() {
   const { status, me, refreshMe, signOut } = useAuth();
   const router = useRouter();
-  const [form, setForm] = useState<{ businessName: string; fullName: string; timezone: string }>({
-    businessName: '',
-    fullName: '',
-    timezone: DEFAULT_TZ,
-  });
+  const [form, setForm] = useState({ businessName: '', fullName: '' });
+  // Se detecta en el cliente para no depender de la zona del servidor que prerenderiza la página.
+  const [timezone, setTimezone] = useState(DEFAULT_TIMEZONE);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    setTimezone(detectTimezone());
+  }, []);
 
   useEffect(() => {
     if (status === 'signedOut') router.replace('/login');
@@ -34,7 +37,7 @@ export default function OnboardingPage() {
     try {
       const body: OnboardingRequest = {
         businessName: form.businessName,
-        timezone: form.timezone,
+        timezone,
         ...(form.fullName.trim() ? { fullName: form.fullName } : {}),
       };
       await api<MeResponse>('/api/onboarding', { method: 'POST', body });
@@ -49,46 +52,53 @@ export default function OnboardingPage() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'grid', placeItems: 'center', p: 2 }}>
-      <Card sx={{ width: '100%', maxWidth: 460 }}>
-        <CardContent>
-          <Stack component="form" spacing={2} onSubmit={onSubmit}>
-            <Typography variant="h5" component="h1" sx={{ fontWeight: 700 }}>
-              Configurá tu negocio
-            </Typography>
-            <Typography color="text.secondary">
-              Tu cuenta todavía no tiene un negocio asociado. Vas a quedar como dueño/a.
-            </Typography>
-            {error && <Alert severity="error">{error}</Alert>}
-            <TextField
-              label="Nombre del negocio"
-              required
-              value={form.businessName}
-              error={!!errors.businessName}
-              helperText={errors.businessName}
-              onChange={(e) => setForm({ ...form, businessName: e.target.value })}
-            />
-            <TextField
-              label="Tu nombre (opcional)"
-              value={form.fullName}
-              onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-            />
-            <TextField
-              label="Zona horaria"
-              value={form.timezone}
-              error={!!errors.timezone}
-              helperText={errors.timezone ?? 'Formato IANA, por ejemplo America/Argentina/Buenos_Aires'}
-              onChange={(e) => setForm({ ...form, timezone: e.target.value })}
-            />
-            <Stack direction="row" spacing={1} sx={{ justifyContent: 'space-between' }}>
-              <Button onClick={signOut}>Salir</Button>
-              <Button type="submit" variant="contained" disabled={submitting}>
-                {submitting ? 'Creando…' : 'Crear negocio'}
-              </Button>
-            </Stack>
-          </Stack>
-        </CardContent>
-      </Card>
-    </Box>
+    <AuthLayout>
+      <Stack component="form" spacing={2.5} onSubmit={onSubmit}>
+        <div>
+          <Typography variant="overline" color="primary">
+            Último paso
+          </Typography>
+          <Typography variant="h5" component="h1">
+            Configurá tu negocio
+          </Typography>
+          <Typography color="text.secondary" sx={{ mt: 0.5 }}>
+            Tu cuenta todavía no tiene un negocio asociado. Vas a quedar como dueño/a.
+          </Typography>
+        </div>
+        {error && <Alert severity="error">{error}</Alert>}
+        <TextField
+          label="Nombre del negocio"
+          placeholder="Ej.: Peluquería Sol"
+          required
+          autoFocus
+          value={form.businessName}
+          error={!!errors.businessName}
+          helperText={errors.businessName}
+          onChange={(e) => setForm({ ...form, businessName: e.target.value })}
+        />
+        <TextField
+          label="Tu nombre (opcional)"
+          value={form.fullName}
+          onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+        />
+        <Stack
+          direction="row"
+          spacing={1.5}
+          sx={{ alignItems: 'flex-start', p: 1.5, borderRadius: 2.5, bgcolor: 'action.hover' }}
+        >
+          <PublicRoundedIcon fontSize="small" sx={{ color: 'text.secondary', mt: 0.25 }} />
+          <Typography variant="body2" color="text.secondary">
+            Horarios en <Box component="strong" sx={{ color: 'text.primary' }}>{timezoneLabel(timezone)}</Box>, según tu
+            dispositivo. Podés cambiarlo después en Negocio.
+          </Typography>
+        </Stack>
+        <Button type="submit" variant="contained" size="large" disabled={submitting}>
+          {submitting ? 'Creando…' : 'Crear negocio'}
+        </Button>
+        <Button onClick={signOut} color="inherit" sx={{ alignSelf: 'center', color: 'text.secondary' }}>
+          Salir y usar otra cuenta
+        </Button>
+      </Stack>
+    </AuthLayout>
   );
 }
