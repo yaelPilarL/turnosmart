@@ -1,11 +1,13 @@
 'use client';
 
-import { Button, Stack, Typography } from '@mui/material';
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import { Box, Button } from '@mui/material';
 import Link from 'next/link';
 import { use } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { EventHistory } from '@/components/EventHistory';
 import { RiskExplanationPanel } from '@/components/RiskExplanationPanel';
+import { PageHeader } from '@/components/ui';
 
 /**
  * Detalle del turno: A aporta explicación de riesgo e historial.
@@ -17,17 +19,26 @@ export default function AppointmentDetailPage({ params }: { params: Promise<{ id
   if (!me?.onboarded) return null;
 
   return (
-    <Stack spacing={2}>
-      <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h5" component="h1" sx={{ fontWeight: 700 }}>
-          Detalle del turno
-        </Typography>
-        <Button component={Link} href="/customers">
-          Volver
-        </Button>
-      </Stack>
-      <RiskExplanationPanel appointmentId={id} />
-      <EventHistory appointmentId={id} timezone={me.business.timezone} />
-    </Stack>
+    <>
+      <PageHeader
+        title="Detalle del turno"
+        subtitle="Riesgo de ausencia y movimientos registrados."
+        back={
+          <Button
+            component={Link}
+            href="/customers"
+            size="small"
+            startIcon={<ArrowBackRoundedIcon />}
+            sx={{ ml: -1, mb: 1, color: 'text.secondary' }}
+          >
+            Volver
+          </Button>
+        }
+      />
+      <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 7fr) minmax(0, 4fr)' }, alignItems: 'start' }}>
+        <RiskExplanationPanel appointmentId={id} />
+        <EventHistory appointmentId={id} timezone={me.business.timezone} />
+      </Box>
+    </>
   );
 }

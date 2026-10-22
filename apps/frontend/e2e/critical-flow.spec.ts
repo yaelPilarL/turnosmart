@@ -10,8 +10,8 @@ if (!email || !password) {
 
 async function login(page: Page) {
   await page.goto('/login');
-  await page.getByLabel('Email').fill(email!);
-  await page.getByLabel('Contraseña').fill(password!);
+  await page.getByRole('textbox', { name: 'Email', exact: true }).fill(email!);
+  await page.getByRole('textbox', { name: 'Contraseña', exact: true }).fill(password!);
   await page.getByRole('button', { name: 'Ingresar' }).click();
 
   // Una cuenta nueva pasa por el onboarding una única vez.
@@ -25,10 +25,10 @@ async function login(page: Page) {
 
 test('credenciales inválidas muestran error y permiten reintentar', async ({ page }) => {
   await page.goto('/login');
-  await page.getByLabel('Email').fill(email!);
-  await page.getByLabel('Contraseña').fill('contraseña-incorrecta');
+  await page.getByRole('textbox', { name: 'Email', exact: true }).fill(email!);
+  await page.getByRole('textbox', { name: 'Contraseña', exact: true }).fill('contraseña-incorrecta');
   await page.getByRole('button', { name: 'Ingresar' }).click();
-  await expect(page.getByRole('alert')).toContainText('incorrectos');
+  await expect(page.getByRole('alert').filter({ hasText: 'incorrectos' })).toBeVisible();
   await expect(page).toHaveURL(/\/login/);
 });
 
@@ -44,11 +44,11 @@ test('recorrido crítico: login → cliente → recarga → edición → logout'
   // Alta con validación del servidor.
   await page.getByRole('button', { name: 'Nuevo cliente' }).click();
   await page.getByLabel('Nombre y apellido').fill(name);
-  await page.getByLabel('Email').fill('no-es-un-email');
+  await page.getByRole('textbox', { name: 'Email', exact: true }).fill('no-es-un-email');
   await page.getByRole('button', { name: 'Guardar' }).click();
   await expect(page.getByRole('dialog').getByRole('alert')).toBeVisible();
 
-  await page.getByLabel('Email').fill('e2e@example.com');
+  await page.getByRole('textbox', { name: 'Email', exact: true }).fill('e2e@example.com');
   await page.getByRole('button', { name: 'Guardar' }).click();
   await expect(page.getByRole('dialog')).toBeHidden();
 
