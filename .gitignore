@@ -10,3 +10,5 @@ coverage/
 playwright-report/
 test-results/
 next-env.d.ts
+# Vínculo local con el proyecto de Vercel (orgId/projectId); se cargan en GitHub como variables.
+.vercel/
