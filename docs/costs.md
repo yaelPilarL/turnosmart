@@ -3,23 +3,27 @@
 Objetivo: USD 0 de dinero personal. Lo que consume créditos se registra como costo aunque el desembolso sea cero.
 Precios públicos consultados el 19/10/2026 (East US, USD, sin impuestos); no reemplazan las condiciones de la cuenta.
 
-## Relevamiento de la cuenta (completar antes del 23/10)
+## Relevamiento de la cuenta
+
+Relevado por A el 23/10/2026. Los IDs de suscripción y de cuenta de facturación se omiten a propósito.
 
 | Dato | Valor | Fuente / fecha |
 |---|---|---|
-| Titular de la suscripción Azure | | |
-| Offer ID | | |
-| Suscripción | | |
-| Moneda | | |
-| Saldo utilizable | | |
-| Vencimiento del crédito | | |
-| Servicios excluidos | | |
-| Región / SKU permitidos | | |
-| Spending limit activo | | |
-| Facturación adicional habilitada | | |
-| Vercel Hobby elegible para este repo/equipo | sí / no | |
-| Gemini: modelo habilitado y cuota Free | | |
-| GitHub Actions: minutos disponibles | | |
+| Titular de la suscripción Azure | Yael Pilar Luque (cuenta institucional, directorio UTN FRLP), rol Owner | Portal → Subscriptions → Overview, 23/10/2026 |
+| Offer ID | No aplica: la suscripción es "Azure Plan" bajo Microsoft Customer Agreement (no usa el Offer ID heredado `MS-AZR-0170P`) | Portal → Subscriptions → Overview / Cost Management + Billing, 23/10/2026 |
+| Suscripción | Azure for Students — estado Active, sin recursos creados | Portal → Subscriptions → Overview, 23/10/2026 |
+| Moneda | USD | Portal → Cost Management + Billing → Summary, 23/10/2026 |
+| Saldo utilizable | USD 98,79 de USD 100 (USD 1,21 consumidos); costo de octubre USD 0,00 | Portal → Cost Management + Billing → Summary, 23/10/2026 |
+| Vencimiento del crédito | 10/04/2027 (170 días al 23/10/2026) | Portal → Education → Overview, 23/10/2026 |
+| Servicios excluidos | No figura en el portal. La oferta pública excluye Marketplace: no usar imágenes ni servicios de Marketplace | Oferta pública Azure for Students; pendiente de confirmar en la cuenta |
+| Región / SKU permitidos | Pendiente: validar East US + App Service F1/B1 con el what-if de B07 antes de V1 | — |
+| Spending limit activo | Sin medio de pago asociado (0 métodos de pago): el consumo no puede exceder el crédito | Portal → Cost Management + Billing → Payment methods, 23/10/2026 |
+| Facturación adicional habilitada | No: sin medio de pago y "Amount due USD 0,00 — No payment needed" | Portal → Cost Management + Billing → Summary, 23/10/2026 |
+| Budget de la suscripción | Disponible (opción "Add" habilitada), todavía no creado | Portal → Subscriptions → Budgets, 23/10/2026 |
+| Vercel Hobby elegible para este repo/equipo | Probablemente sí: repositorio público y proyecto académico no comercial. Proyecto `turnosmart` creado en Hobby, sin Git conectado (deploy sólo manual). Pendiente confirmar destino con B | vercel.com/docs/plans/hobby y dashboard de Vercel, 23/10/2026 |
+| Supabase de demo | Proyecto `turnosmart-demo`, plan Free, región East US (North Virginia), misma zona que Azure East US. Se pausa tras una semana sin uso: restaurar antes de cada ventana | Dashboard de Supabase, 23/10/2026 |
+| Gemini: modelo habilitado y cuota Free | `gemini-3.5-flash-lite` responde con clave Free, sin facturación activada | Llamada real desde la app local, 21/10/2026 |
+| GitHub Actions: minutos disponibles | Sin límite en runners Linux estándar (repositorio público). Cuidar el almacenamiento de artefactos (500 MB) | Visibilidad del repositorio en GitHub, 23/10/2026 |
 
 No sumar beneficios de los tres integrantes ni asumir créditos de Vercel, Supabase o Google.
 
