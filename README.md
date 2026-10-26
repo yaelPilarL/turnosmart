@@ -49,7 +49,7 @@ Al primer ingreso, una cuenta sin negocio pasa por el onboarding y queda como `O
 
 Los comandos de integración y E2E **fallan** si falta su entorno: "no hay tests" nunca cuenta como éxito.
 
-## API de A
+## APIs
 
 | Método | Ruta | Permiso |
 |---|---|---|
